@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="AYANODE TGU v1.3 — execução de tarefas em agentes de IA reais com coordenação ICOER">
+  <title>AYANODE TGU v1.3 | Agentes de IA reais</title>
+  <link rel="stylesheet" href="/assets/agents.css">
+  <script src="/assets/agents.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <div><div class="eyebrow">ⵔ◯ᘛ9ᘚ◯ⵔ · PROJETO AYA / TGU / ICOER</div><h1>AYA<span>NODE</span> <small>v1.3</small></h1><p>Laboratório de coordenação multiagente com modelos reais</p></div>
+      <div class="topright"><span class="chip"><i></i> Gateway local</span><a href="/coordination.html">Abrir simulação v1.2</a></div>
+    </header>
+    <section class="hero panel"><div><strong>Modelos conectados por adaptadores</strong><p>O AYANODE identifica capacidades, escolhe agentes elegíveis e passa os resultados ao próximo especialista em uma sequência auditável. Sem ferramentas, navegação web ou autonomia externa.</p></div><div class="big">05 <small>etapas</small></div></section>
+    <main class="columns">
+      <section class="panel setup">
+        <div class="sectionhead"><h2>1 · Conexões</h2><button type="button" id="refresh" class="minor">Atualizar</button></div>
+        <p class="helper">O estado “configurado” indica somente que o servidor conhece o provedor e suas credenciais. Use <b>Testar</b> para verificar comunicação efetiva.</p>
+        <div id="agents" class="agents"><div class="empty">Carregando configuração...</div></div>
+        <p id="missing" class="notice" role="status"></p>
+      </section>
+      <section class="panel run">
+        <h2>2 · Defina um objetivo</h2>
+        <label for="goal">Objetivo compartilhado pelos agentes</label>
+        <textarea id="goal" maxlength="4000" rows="6" placeholder="Ex.: Analise como o AYANODE pode distribuir tarefas entre modelos diferentes, indique limitações e produza uma proposta técnica testável.">Analise a integração de agentes de IA no AYANODE e proponha um experimento controlado para comparar roteamento ICOER com menor ocupação, com métricas e limitações.</textarea>
+        <div class="formrow"><div><label for="policy">Política de coordenação</label><select id="policy"><option value="icoer">ICOER + capacidades + disponibilidade</option><option value="least_loaded">Controle: menor ocupação</option></select></div><div class="cost"><label class="confirm"><input type="checkbox" id="costs"> Autorizo as chamadas aos modelos configurados (podem gerar custos).</label></div></div>
+        <button id="run" type="button" class="primary">▶ Iniciar fluxo com agentes reais</button>
+        <p class="helper">Serão até cinco chamadas em sequência: contextualização → análise → redação → revisão → síntese. Falhas não são repetidas automaticamente. Sem verificação factual externa.</p>
+        <div id="status" class="status" role="status" aria-live="polite">Nenhuma execução iniciada.</div>
+      </section>
+    </main>
+    <section class="panel result">
+      <div class="sectionhead"><h2>3 · Resultados e auditoria</h2><button id="export" type="button" class="minor" disabled>Exportar JSON</button></div>
+      <div id="metrics" class="metrics"></div>
+      <div id="steps" class="steps"><div class="empty">Os resultados serão apresentados aqui após a execução.</div></div>
+      <details><summary>Registro das decisões</summary><div id="trace" class="trace"></div></details>
+    </section>
+    <footer>AYANODE v1.3 · Integrações experimentais: OpenAI Responses, Anthropic Messages, Gemini generateContent e Ollama chat. <strong>Não prova inteligência ou consciência emergente.</strong> As chaves de API nunca são enviadas ao navegador.</footer>
+  </div>
+</body>
+</html>

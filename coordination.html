@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AYANODE v1.2 — Coordenação Multiagente</title>
+<style>
+:root{color-scheme:dark;--bg:#080f1b;--panel:#101d2c;--muted:#9ab0c1;--line:#2a4153;--ink:#ecf8fa;--accent:#55e2c2;--blue:#8bbcf8;--violet:#d7adff;--danger:#ffaaa8}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 85% 0%,#153e46 0%,transparent 35%),var(--bg);font:14px/1.5 system-ui,Segoe UI,Arial,sans-serif;color:var(--ink)}
+a{color:var(--accent)}.app{max-width:1320px;margin:0 auto;padding:25px;display:grid;grid-template-columns:335px minmax(0,1fr);gap:18px}
+header{grid-column:1/-1;border-bottom:1px solid var(--line);padding-bottom:19px;display:flex;justify-content:space-between;gap:18px;align-items:start}
+h1{font-size:32px;letter-spacing:-.03em;margin:0}h1 span{color:var(--accent)}h2{margin:0 0 13px;font-size:17px}h3{margin:18px 0 8px;font-size:14px}.sub{color:var(--muted);margin:4px 0}.eyebrow{color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.15em;font-size:11px}
+.panel{background:#101d2ce8;border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 6px 28px #0003}.controls{align-self:start;position:sticky;top:16px}main{display:grid;gap:16px;min-width:0}.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+button{background:#123e3a;color:#dbfff2;border:1px solid #397e6f;border-radius:9px;padding:10px 12px;font-weight:700;cursor:pointer}button:hover{background:#215a52}button:disabled{opacity:.5;cursor:wait}.secondary{background:#1b3048;border-color:#41617b;color:#dbecff}.secondary:hover{background:#2b455f}
+label{display:block;color:var(--muted);font-size:12px;margin-top:10px}input,select{width:100%;background:#0b1826;border:1px solid #365269;color:var(--ink);padding:10px;border-radius:8px;font:inherit;margin-top:4px}select:focus,input:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hint{color:var(--muted);font-size:12px;line-height:1.6}.warning{background:#132c36;border-left:3px solid var(--accent);padding:11px;border-radius:5px;font-size:12px;color:#d2e8ed}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.kpi{padding:16px;background:#101d2c;border:1px solid var(--line);border-radius:12px}.kpi b{display:block;color:var(--accent);font-size:28px}.kpi small{color:var(--muted)}
+.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;text-align:left;font-size:12px}th{color:#a6c0d1;font-weight:600}td,th{padding:10px;border-bottom:1px solid #223747;vertical-align:middle}tr:last-child td{border:0}.tag{display:inline-block;border:1px solid #496179;padding:2px 6px;border-radius:6px;margin:2px 4px 2px 0;color:#c4daec;font-size:10px;white-space:nowrap}.status{display:inline-block;font-weight:700;padding:3px 7px;border-radius:999px;background:#2c3e53;color:#d4e3ec;font-size:10px}.status.completed{background:#163f37;color:#88f0c9}.status.running{background:#2b3b64;color:#bbccff}.status.failed,.status.needs_review{background:#49313c;color:#ffbac5}
+.trace{max-height:310px;overflow-y:auto;background:#091723;border-radius:8px;border:1px solid #26394d;padding:12px;font:11px/1.8 ui-monospace,Consolas,monospace;color:#b2d2dc}.trace div{padding:3px 0;border-bottom:1px solid #1a3545}.trace div:last-child{border-bottom:0}.meter{height:7px;background:#253b50;min-width:75px;border-radius:5px;overflow:hidden}.meter span{display:block;height:100%;background:linear-gradient(90deg,#56e8c3,#a29df4)}footer{grid-column:1/-1;color:#90adbd;font-size:12px;padding-top:12px;border-top:1px solid var(--line)}
+@media(max-width:920px){.app{grid-template-columns:1fr;padding:12px}.controls{position:static}header{flex-direction:column}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div><div class="eyebrow">Projeto AYA · Núcleo experimental</div><h1>AYA<span>NODE</span> <small>v1.2</small></h1><p class="sub">Coordenação de tarefas entre agentes especializados — ICOER + capacidades + disponibilidade</p></div><div><a href="./index.html">Abrir laboratório TGU v1.1</a><p class="sub">ⵔ◯ᘛ9ᘚ◯ⵔ</p></div></header>
+<aside class="panel controls">
+  <h2>Laboratório de coordenação</h2>
+  <div class="warning"><strong>Simulação verificável.</strong> Os quatro agentes desta interface são executores locais demonstrativos, não modelos de IA conectados. O módulo JS aceita executores reais por adaptadores.</div>
+  <h3>Experimento</h3>
+  <div class="btnrow"><button id="run">▶ Distribuir e executar tarefas</button><button class="secondary" id="reset">↻ Reiniciar laboratório</button></div>
+  <label for="policy">Política de roteamento</label>
+  <select id="policy"><option value="icoer">AYANODE: adequação + ICOER</option><option value="least_loaded">Controle: menor ocupação</option></select>
+  <label for="capability">Nova tarefa (habilidade obrigatória)</label>
+  <select id="capability"><option value="research">Pesquisa</option><option value="analyze">Análise</option><option value="write">Redação</option><option value="review">Revisão</option><option value="summarize">Síntese</option></select>
+  <label for="tasktitle">Descrição da tarefa</label>
+  <input id="tasktitle" value="Nova tarefa de teste" maxlength="120" />
+  <div class="btnrow" style="margin-top:10px"><button class="secondary" id="add">+ Adicionar tarefa</button><button class="secondary" id="export">Exportar auditoria JSON</button></div>
+  <p class="hint">O roteamento bloqueia agentes sem a capacidade exigida; o ICOER atua apenas como um componente do escore experimental. Tarefas não concluídas podem ser executadas em outra rodada.</p>
+  <p class="hint"><strong>Não há chamadas a APIs externas.</strong> Para integrar agentes LangGraph, AutoGen, CrewAI, A2A ou próprios, envolva sua execução na função <code>execute()</code> documentada.</p>
+</aside>
+<main>
+  <section class="kpis" aria-label="Indicadores"><div class="kpi"><small>Agentes cadastrados</small><b id="k-agents">—</b></div><div class="kpi"><small>Tarefas concluídas</small><b id="k-done">—</b></div><div class="kpi"><small>Tarefas na fila</small><b id="k-queued">—</b></div><div class="kpi"><small>ICOER entre vetores declarados</small><b id="k-icoer">—</b></div></section>
+  <section class="panel"><h2>Registro de agentes e capacidades</h2><div class="scroll"><table><thead><tr><th>Agente</th><th>Especialidades</th><th>Ocupação</th><th>Execuções</th><th>Estado</th></tr></thead><tbody id="agents-body"></tbody></table></div></section>
+  <section class="panel"><h2>Fila, responsáveis e decisões de roteamento</h2><div class="scroll"><table><thead><tr><th>Tarefa</th><th>Requisito</th><th>Responsável</th><th>Estado</th><th>Escore</th><th>ICOER da afinidade</th></tr></thead><tbody id="tasks-body"></tbody></table></div><p class="hint" id="selection-note"></p></section>
+  <section class="panel"><h2>Eventos auditáveis</h2><div class="trace" id="trace" role="log" aria-live="polite"></div></section>
+</main>
+<footer>AYANODE Multiagentes — mecanismo experimental de seleção e execução local de tarefas. Não comprova superioridade, consciência, inteligência emergente nem compatibilidade protocolar A2A/MCP.</footer>
+</div>
+<script src="./src/coordination.js"></script><script src="./src/coordination-app.js"></script>
+</body>
+</html>

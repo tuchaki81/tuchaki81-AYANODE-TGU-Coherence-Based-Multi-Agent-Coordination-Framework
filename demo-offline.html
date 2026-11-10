@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AYANODE v1.2 — Coordenação Multiagente</title>
+<style>
+:root{color-scheme:dark;--bg:#080f1b;--panel:#101d2c;--muted:#9ab0c1;--line:#2a4153;--ink:#ecf8fa;--accent:#55e2c2;--blue:#8bbcf8;--violet:#d7adff;--danger:#ffaaa8}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 85% 0%,#153e46 0%,transparent 35%),var(--bg);font:14px/1.5 system-ui,Segoe UI,Arial,sans-serif;color:var(--ink)}
+a{color:var(--accent)}.app{max-width:1320px;margin:0 auto;padding:25px;display:grid;grid-template-columns:335px minmax(0,1fr);gap:18px}
+header{grid-column:1/-1;border-bottom:1px solid var(--line);padding-bottom:19px;display:flex;justify-content:space-between;gap:18px;align-items:start}
+h1{font-size:32px;letter-spacing:-.03em;margin:0}h1 span{color:var(--accent)}h2{margin:0 0 13px;font-size:17px}h3{margin:18px 0 8px;font-size:14px}.sub{color:var(--muted);margin:4px 0}.eyebrow{color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.15em;font-size:11px}
+.panel{background:#101d2ce8;border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 6px 28px #0003}.controls{align-self:start;position:sticky;top:16px}main{display:grid;gap:16px;min-width:0}.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+button{background:#123e3a;color:#dbfff2;border:1px solid #397e6f;border-radius:9px;padding:10px 12px;font-weight:700;cursor:pointer}button:hover{background:#215a52}button:disabled{opacity:.5;cursor:wait}.secondary{background:#1b3048;border-color:#41617b;color:#dbecff}.secondary:hover{background:#2b455f}
+label{display:block;color:var(--muted);font-size:12px;margin-top:10px}input,select{width:100%;background:#0b1826;border:1px solid #365269;color:var(--ink);padding:10px;border-radius:8px;font:inherit;margin-top:4px}select:focus,input:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.hint{color:var(--muted);font-size:12px;line-height:1.6}.warning{background:#132c36;border-left:3px solid var(--accent);padding:11px;border-radius:5px;font-size:12px;color:#d2e8ed}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.kpi{padding:16px;background:#101d2c;border:1px solid var(--line);border-radius:12px}.kpi b{display:block;color:var(--accent);font-size:28px}.kpi small{color:var(--muted)}
+.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;text-align:left;font-size:12px}th{color:#a6c0d1;font-weight:600}td,th{padding:10px;border-bottom:1px solid #223747;vertical-align:middle}tr:last-child td{border:0}.tag{display:inline-block;border:1px solid #496179;padding:2px 6px;border-radius:6px;margin:2px 4px 2px 0;color:#c4daec;font-size:10px;white-space:nowrap}.status{display:inline-block;font-weight:700;padding:3px 7px;border-radius:999px;background:#2c3e53;color:#d4e3ec;font-size:10px}.status.completed{background:#163f37;color:#88f0c9}.status.running{background:#2b3b64;color:#bbccff}.status.failed,.status.needs_review{background:#49313c;color:#ffbac5}
+.trace{max-height:310px;overflow-y:auto;background:#091723;border-radius:8px;border:1px solid #26394d;padding:12px;font:11px/1.8 ui-monospace,Consolas,monospace;color:#b2d2dc}.trace div{padding:3px 0;border-bottom:1px solid #1a3545}.trace div:last-child{border-bottom:0}.meter{height:7px;background:#253b50;min-width:75px;border-radius:5px;overflow:hidden}.meter span{display:block;height:100%;background:linear-gradient(90deg,#56e8c3,#a29df4)}footer{grid-column:1/-1;color:#90adbd;font-size:12px;padding-top:12px;border-top:1px solid var(--line)}
+@media(max-width:920px){.app{grid-template-columns:1fr;padding:12px}.controls{position:static}header{flex-direction:column}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div><div class="eyebrow">Projeto AYA · Núcleo experimental</div><h1>AYA<span>NODE</span> <small>v1.2</small></h1><p class="sub">Coordenação de tarefas entre agentes especializados — ICOER + capacidades + disponibilidade</p></div><div><a href="./index.html">Abrir laboratório TGU v1.1</a><p class="sub">ⵔ◯ᘛ9ᘚ◯ⵔ</p></div></header>
+<aside class="panel controls">
+  <h2>Laboratório de coordenação</h2>
+  <div class="warning"><strong>Simulação verificável.</strong> Os quatro agentes desta interface são executores locais demonstrativos, não modelos de IA conectados. O módulo JS aceita executores reais por adaptadores.</div>
+  <h3>Experimento</h3>
+  <div class="btnrow"><button id="run">▶ Distribuir e executar tarefas</button><button class="secondary" id="reset">↻ Reiniciar laboratório</button></div>
+  <label for="policy">Política de roteamento</label>
+  <select id="policy"><option value="icoer">AYANODE: adequação + ICOER</option><option value="least_loaded">Controle: menor ocupação</option></select>
+  <label for="capability">Nova tarefa (habilidade obrigatória)</label>
+  <select id="capability"><option value="research">Pesquisa</option><option value="analyze">Análise</option><option value="write">Redação</option><option value="review">Revisão</option><option value="summarize">Síntese</option></select>
+  <label for="tasktitle">Descrição da tarefa</label>
+  <input id="tasktitle" value="Nova tarefa de teste" maxlength="120" />
+  <div class="btnrow" style="margin-top:10px"><button class="secondary" id="add">+ Adicionar tarefa</button><button class="secondary" id="export">Exportar auditoria JSON</button></div>
+  <p class="hint">O roteamento bloqueia agentes sem a capacidade exigida; o ICOER atua apenas como um componente do escore experimental. Tarefas não concluídas podem ser executadas em outra rodada.</p>
+  <p class="hint"><strong>Não há chamadas a APIs externas.</strong> Para integrar agentes LangGraph, AutoGen, CrewAI, A2A ou próprios, envolva sua execução na função <code>execute()</code> documentada.</p>
+</aside>
+<main>
+  <section class="kpis" aria-label="Indicadores"><div class="kpi"><small>Agentes cadastrados</small><b id="k-agents">—</b></div><div class="kpi"><small>Tarefas concluídas</small><b id="k-done">—</b></div><div class="kpi"><small>Tarefas na fila</small><b id="k-queued">—</b></div><div class="kpi"><small>ICOER entre vetores declarados</small><b id="k-icoer">—</b></div></section>
+  <section class="panel"><h2>Registro de agentes e capacidades</h2><div class="scroll"><table><thead><tr><th>Agente</th><th>Especialidades</th><th>Ocupação</th><th>Execuções</th><th>Estado</th></tr></thead><tbody id="agents-body"></tbody></table></div></section>
+  <section class="panel"><h2>Fila, responsáveis e decisões de roteamento</h2><div class="scroll"><table><thead><tr><th>Tarefa</th><th>Requisito</th><th>Responsável</th><th>Estado</th><th>Escore</th><th>ICOER da afinidade</th></tr></thead><tbody id="tasks-body"></tbody></table></div><p class="hint" id="selection-note"></p></section>
+  <section class="panel"><h2>Eventos auditáveis</h2><div class="trace" id="trace" role="log" aria-live="polite"></div></section>
+</main>
+<footer>AYANODE Multiagentes — mecanismo experimental de seleção e execução local de tarefas. Não comprova superioridade, consciência, inteligência emergente nem compatibilidade protocolar A2A/MCP.</footer>
+</div>
+<script>
+/* AYANODE v1.2 — Núcleo de coordenação multiagente.
+ * Interfaces independentes de provedor. Não executa LLMs nem implementa A2A/MCP.
+ * CommonJS (Node) e window.AYANODECoordination (navegador).
+ */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.AYANODECoordination = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+
+  const VERSION = '1.2.0';
+  const STATES = Object.freeze(['queued', 'running', 'completed', 'failed', 'needs_review']);
+  const MAX_JSON = 16384;
+  const COHERENCE_EXPONENT = 12; // Referência ao ICOER/TGU — parâmetro experimental.
+
+  const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+  function requireString(value, field, limit = 90) {
+    if (typeof value !== 'string' || !value.trim() || value.length > limit) throw new TypeError(`${field}: texto inválido`);
+    return value.trim();
+  }
+  function validId(value, field) {
+    const v = requireString(value, field, 90);
+    if (!/^[a-zA-Z0-9_:-]+$/.test(v)) throw new TypeError(`${field}: use letras, números, _ : -`);
+    return v;
+  }
+  function capList(arr, field) {
+    if (!Array.isArray(arr) || arr.length > 32) throw new TypeError(`${field}: array inválido`);
+    const list = arr.map(v => validId(v, field));
+    if (new Set(list).size !== list.length) throw new TypeError(`${field}: duplicidade`);
+    return list;
+  }
+  function vector(v, dimension, field) {
+    if (v == null) return null;
+    if (!Array.isArray(v) || v.length !== dimension || !v.every(Number.isFinite)) throw new TypeError(`${field}: vetor inválido (${dimension} dimensões)`);
+    const norm = Math.hypot(...v);
+    if (!(norm > 1e-12)) throw new TypeError(`${field}: vetor nulo`);
+    return v.map(x => x / norm);
+  }
+  function serializable(value, field) {
+    let data;
+    try { data = JSON.stringify(value); } catch (_) { throw new TypeError(`${field}: não serializável`); }
+    if (data === undefined || data.length > MAX_JSON) throw new TypeError(`${field}: dados muito grandes/inválidos`);
+    const parsed = JSON.parse(data);
+    if (parsed === null || Array.isArray(parsed) || typeof parsed !== 'object') throw new TypeError(`${field}: objeto JSON obrigatório`);
+    return parsed;
+  }
+  function clone(value) { return JSON.parse(JSON.stringify(value)); }
+  function icAffinity(a, b, D = COHERENCE_EXPONENT) {
+    if (a === null || b === null) return null;
+    const cosine = Math.max(-1, Math.min(1, a.reduce((s, x, i) => s + x * b[i], 0)));
+    return ((1 + cosine) / 2) ** D;
+  }
+  function precision(x) { return Math.round(x * 1e6) / 1e6; }
+
+  class Coordinator {
+    constructor(options = {}) {
+      this.dimension = options.dimension == null ? 16 : options.dimension;
+      if (!Number.isInteger(this.dimension) || this.dimension < 2 || this.dimension > 256) throw new TypeError('dimension inválida');
+      this.policy = options.policy || 'icoer';
+      if (!['icoer', 'least_loaded'].includes(this.policy)) throw new TypeError('Política inválida');
+      this.clock = options.clock || Date.now;
+      if (typeof this.clock !== 'function') throw new TypeError('clock precisa ser função');
+      this.offlineAfterMs = options.offlineAfterMs ?? 30000;
+      if (!Number.isFinite(this.offlineAfterMs) || this.offlineAfterMs <= 0) throw new TypeError('offlineAfterMs inválido');
+      this.eventLimit = options.eventLimit ?? 500;
+      if (!Number.isInteger(this.eventLimit) || this.eventLimit < 10 || this.eventLimit > 10000) throw new TypeError('eventLimit inválido');
+      this.agents = new Map(); this.tasks = new Map(); this.events = [];
+      this.nextId = 1; this.nextEvent = 1; this.nextAttempt = 1;
+    }
+
+    record(type, info = {}) {
+      const event = { seq: this.nextEvent++, time: this.clock(), type, ...info };
+      this.events.push(event);
+      if (this.events.length > this.eventLimit) this.events.shift();
+      return event;
+    }
+
+    registerAgent(input) {
+      if (!input || typeof input !== 'object') throw new TypeError('Agente inválido');
+      const id = validId(input.id, 'agent.id');
+      if (this.agents.has(id)) throw new Error(`Agente já registrado: ${id}`);
+      const capabilities = capList(input.capabilities || [], 'capabilities');
+      if (!capabilities.length) throw new TypeError('Agente precisa declarar capacidades');
+      if (typeof input.execute !== 'function') throw new TypeError('execute(task, context) precisa ser função');
+      const capacity = input.capacity ?? 1;
+      if (!Number.isInteger(capacity) || capacity < 1 || capacity > 32) throw new TypeError('capacity inválida');
+      const agent = {
+        id, name: typeof input.name === 'string' ? input.name.slice(0, 100) : id,
+        capabilities, embedding: vector(input.embedding, this.dimension, 'agent.embedding'),
+        capacity, active: 0, online: true, lastSeen: this.clock(),
+        completed: 0, failed: 0, execute: input.execute
+      };
+      this.agents.set(id, agent);
+      this.record('agent_registered', { agentId: id, capabilities });
+      return this.agentView(agent);
+    }
+
+    heartbeat(id) {
+      const agent = this.agents.get(validId(id, 'agentId'));
+      if (!agent) throw new Error('Agente desconhecido');
+      agent.lastSeen = this.clock(); agent.online = true;
+      this.record('agent_heartbeat', { agentId: id });
+    }
+
+    setOnline(id, online) {
+      const agent = this.agents.get(validId(id, 'agentId'));
+      if (!agent) throw new Error('Agente desconhecido');
+      agent.online = !!online;
+      if (online) agent.lastSeen = this.clock();
+      this.record('agent_status', { agentId: id, online: agent.online });
+    }
+
+    agentView(a) {
+      return { id:a.id, name:a.name, capabilities:[...a.capabilities],
+        capacity:a.capacity, active:a.active, online:a.online && this.clock() - a.lastSeen <= this.offlineAfterMs,
+        completed:a.completed, failed:a.failed, embedding:a.embedding ? [...a.embedding] : null };
+    }
+
+    submitTask(input) {
+      if (!input || typeof input !== 'object') throw new TypeError('Tarefa inválida');
+      const id = input.id == null ? `task-${this.nextId++}` : validId(input.id, 'task.id');
+      if (this.tasks.has(id)) throw new Error(`Tarefa duplicada: ${id}`);
+      const requiredCapabilities = capList(input.requiredCapabilities || [], 'requiredCapabilities');
+      if (!requiredCapabilities.length) throw new TypeError('Tarefa sem capacidades requeridas');
+      const preferredCapabilities = capList(input.preferredCapabilities || [], 'preferredCapabilities');
+      const dependsOn = capList(input.dependsOn || [], 'dependsOn');
+      for (const dep of dependsOn) {
+        if (dep === id || !this.tasks.has(dep)) throw new TypeError(`dependsOn: a tarefa ${dep} deve existir antes da dependente`);
+      }
+      const priority = input.priority ?? 0;
+      if (!Number.isInteger(priority) || priority < -10 || priority > 10) throw new TypeError('priority inválida');
+      const timeoutMs = input.timeoutMs ?? 5000;
+      if (!Number.isInteger(timeoutMs) || timeoutMs < 10 || timeoutMs > 300000) throw new TypeError('timeoutMs inválido');
+      const maxRetries = input.maxRetries ?? 0;
+      if (!Number.isInteger(maxRetries) || maxRetries < 0 || maxRetries > 5) throw new TypeError('maxRetries inválido');
+      const idempotent = input.idempotent === true;
+      if (maxRetries > 0 && !idempotent) throw new TypeError('Retries automáticos exigem idempotent:true');
+      const affinityVector = vector(input.affinityVector, this.dimension, 'task.affinityVector');
+      const task = {
+        id, title: requireString(input.title || id, 'task.title', 160),
+        requiredCapabilities, preferredCapabilities, dependsOn, affinityVector,
+        payload: serializable(input.payload || {}, 'task.payload'),
+        priority, timeoutMs, maxRetries, idempotent,
+        status:'queued', submittedAt:this.clock(), startedAt:null, finishedAt:null,
+        assignedTo:null, attempts:0, attemptToken:null, result:null, error:null,
+        route:null
+      };
+      this.tasks.set(id, task);
+      this.record('task_submitted', {taskId:id, requiredCapabilities});
+      return this.taskView(task);
+    }
+
+    taskView(t) {
+      // O snapshot omite o payload; resultados dos executores podem conter informações privadas. Não o publique sem revisão.
+      return {id:t.id,title:t.title,status:t.status,priority:t.priority,
+        requiredCapabilities:[...t.requiredCapabilities],dependsOn:[...t.dependsOn],
+        ready:t.dependsOn.every(id=>this.tasks.get(id).status==='completed'),assignedTo:t.assignedTo,
+        attempts:t.attempts,submittedAt:t.submittedAt,startedAt:t.startedAt,
+        finishedAt:t.finishedAt,route:t.route ? clone(t.route) : null,error:t.error,
+        result:t.result == null ? null : clone(t.result)};
+    }
+
+    alive(a) { return a.online && (this.clock() - a.lastSeen) <= this.offlineAfterMs; }
+
+    scoreAgent(agent, task) {
+      if (!this.alive(agent) || agent.active >= agent.capacity ||
+        !task.requiredCapabilities.every(cap => agent.capabilities.includes(cap))) return null;
+      const pref = task.preferredCapabilities.length ?
+        task.preferredCapabilities.filter(cap => agent.capabilities.includes(cap)).length / task.preferredCapabilities.length : 1;
+      const availability = 1 - agent.active / agent.capacity;
+      const reliability = (agent.completed + 1) / (agent.completed + agent.failed + 2); // prior beta(1,1)
+      const coherence = icAffinity(agent.embedding, task.affinityVector);
+      const parts = [ [0.40, pref], [0.20, availability], [0.15, reliability] ];
+      if (coherence !== null) parts.push([0.25, coherence]);
+      const total = parts.reduce((s, p) => s + p[0], 0);
+      const score = parts.reduce((s, [w, v]) => s + w * v, 0) / total;
+      return {agentId:agent.id,score:precision(score),coherence:coherence === null ? null : precision(coherence),
+        preferredMatch:precision(pref),availability:precision(availability),reliability:precision(reliability),
+        utilization:precision(agent.active / agent.capacity)};
+    }
+
+    candidates(task) {
+      return [...this.agents.values()].map(a => this.scoreAgent(a, task)).filter(Boolean).sort((a,b) => {
+        if (this.policy === 'least_loaded') return a.utilization-b.utilization || a.agentId.localeCompare(b.agentId);
+        return b.score-a.score || a.agentId.localeCompare(b.agentId);
+      });
+    }
+
+    plan(taskId) {
+      const t = this.tasks.get(taskId);
+      if (!t) throw new Error('Tarefa desconhecida');
+      return {taskId,policy:this.policy,candidates:this.candidates(t)};
+    }
+
+    async executeTask(t, a, selected) {
+      // Entrega no máximo uma vez por tentativa *no processo local*. Sem garantia de exactly-once.
+      const token = `attempt-${this.nextAttempt++}`;
+      t.status='running';t.attempts++;t.attemptToken=token;
+      t.assignedTo=a.id;t.startedAt=this.clock();t.error=null;
+      t.route={policy:this.policy,...selected};a.active++;
+      this.record('task_assigned',{taskId:t.id,agentId:a.id,attempt:t.attempts,score:selected.score,coherence:selected.coherence});
+      let timer=null;const controller=new AbortController();
+      try {
+        const context = {signal:controller.signal,attempt:t.attempts,idempotencyKey:t.id,
+          agentId:a.id,timeoutMs:t.timeoutMs};
+        const input={ id:t.id,title:t.title,payload:clone(t.payload),
+          requiredCapabilities:[...t.requiredCapabilities],
+          inputArtifacts:t.dependsOn.map(dep=>({taskId:dep,result:clone(this.tasks.get(dep).result)})) };
+        const work=Promise.resolve().then(() => a.execute(input, context));
+        const result=await Promise.race([
+          work,
+          new Promise((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new Error('timeout'));},t.timeoutMs);})
+        ]);
+        if (t.attemptToken !== token) return;
+        // Saída precisa ser objeto JSON limitado: impede funções, ciclos e dados excessivos.
+        const output=serializable(result,'result');
+        t.status='completed';t.result=output;t.finishedAt=this.clock();a.completed++;
+        this.record('task_completed',{taskId:t.id,agentId:a.id,attempt:t.attempts});
+      } catch (err) {
+        if (t.attemptToken !== token) return;
+        const message=String(err && err.message || err).slice(0,180);
+        t.error=message;a.failed++;
+        if (t.idempotent && t.attempts <= t.maxRetries) {
+          t.status='queued';t.assignedTo=null;
+          this.record('task_requeued',{taskId:t.id,agentId:a.id,attempt:t.attempts,reason:message});
+        } else {
+          t.status = message === 'timeout' && !t.idempotent ? 'needs_review' : 'failed';
+          t.finishedAt=this.clock();
+          this.record('task_failed',{taskId:t.id,agentId:a.id,attempt:t.attempts,reason:message,status:t.status});
+        }
+      } finally {
+        if (timer!==null) clearTimeout(timer);
+        a.active--;
+      }
+    }
+
+    async runOnce() {
+      // Propagação conservadora: falha de pré-requisito exige revisão humana.
+      for(const task of this.tasks.values()) {
+        if(task.status!=='queued') continue;
+        const failed=task.dependsOn.find(id=>['failed','needs_review'].includes(this.tasks.get(id).status));
+        if(failed){task.status='needs_review';task.finishedAt=this.clock();task.error=`pré-requisito ${failed} não concluído`;
+          this.record('task_blocked',{taskId:task.id,dependsOn:failed});}
+      }
+      const pending=[...this.tasks.values()].filter(t=>t.status==='queued' &&
+        t.dependsOn.every(id=>this.tasks.get(id).status==='completed'))
+        .sort((a,b)=>b.priority-a.priority || a.submittedAt-b.submittedAt || a.id.localeCompare(b.id));
+      const promises=[];
+      for (const task of pending) {
+        const candidates=this.candidates(task);
+        if (!candidates.length) {
+          this.record('task_waiting',{taskId:task.id,reason:'sem agente disponível com capacidades requeridas'});
+          continue;
+        }
+        const selected=candidates[0], agent=this.agents.get(selected.agentId);
+        // executeTask incrementa a ocupação ANTES do próximo roteamento.
+        promises.push(this.executeTask(task,agent,selected));
+      }
+      await Promise.all(promises);
+      this.lastDispatched=promises.length;
+      return this.snapshot();
+    }
+
+    async runUntilIdle(maxRounds=20) {
+      if(!Number.isInteger(maxRounds) || maxRounds<1 || maxRounds>100) throw new TypeError('maxRounds inválido');
+      for(let round=0;round<maxRounds;round++) {
+        await this.runOnce();
+        if(this.lastDispatched===0) break;
+      }
+      return this.snapshot();
+    }
+
+    snapshot() {
+      const tasks=[...this.tasks.values()].map(t=>this.taskView(t));
+      const agents=[...this.agents.values()].map(a=>this.agentView(a));
+      const totals=STATES.reduce((acc,s)=>(acc[s]=tasks.filter(t=>t.status===s).length,acc),{});
+      const completed=[...this.tasks.values()].filter(t=>t.status==='completed' && t.startedAt!==null);
+      const meanLatencyMs=completed.length ? precision(completed.reduce((x,t)=>x+t.finishedAt-t.startedAt,0)/completed.length) : null;
+      const embeddings=[...this.agents.values()].filter(a=>a.embedding!==null).map(a=>a.embedding);
+      let globalICOER=null;
+      if (embeddings.length>=2) {
+        const S=Array(this.dimension).fill(0);
+        for(const v of embeddings)for(let j=0;j<this.dimension;j++) S[j]+=v[j];
+        const size=Math.hypot(...S);
+        if(size>1e-9){const R=S.map(x=>x/size);
+          globalICOER=precision(embeddings.reduce((s,v)=>s+icAffinity(v,R),0)/embeddings.length);
+        }
+      }
+      return {version:VERSION,policy:this.policy,agents,tasks,metrics:{agents:agents.length,total:tasks.length,...totals,
+        completionRate:tasks.length?precision(totals.completed/tasks.length):null,
+        meanLatencyMs,globalICOER},events:this.events.map(e=>({...e}))};
+    }
+    exportAudit() { return JSON.stringify({version:VERSION,policy:this.policy,events:this.events},null,2); }
+  }
+
+  return {VERSION,STATES,COHERENCE_EXPONENT,Coordinator,icAffinity};
+});
+
+</script><script>
+/* Demonstração visual de coordenação com executores simulados (sem LLM/API). */
+(() => {
+'use strict';
+const {Coordinator} = window.AYANODECoordination;
+const el = id => document.getElementById(id);
+const icons = {research:'Pesquisa',analyze:'Análise',write:'Redação',review:'Revisão',summarize:'Síntese'};
+const basis = index => Array.from({length:16}, (_,i) => i===index ? 1 : 0);
+let coordinator;
+const sleep = ms => new Promise(resolve=>setTimeout(resolve,ms));
+function executor(label) {
+  return async (task, context) => {
+    await sleep(60); // latência sintética e explícita
+    if (context.signal.aborted) throw Error('Execução cancelada');
+    return {agent:label, taskId:task.id,
+      message:`Execução simulada de ${label}: ${task.title}`,
+      inputsRecebidos:task.inputArtifacts.length,
+      demoOnly:true};
+  };
+}
+function addText(parent, tag, value, className) {
+  const node=document.createElement(tag); node.textContent=value;
+  if(className) node.className=className; parent.appendChild(node); return node;
+}
+function addCell(row, value) { return addText(row,'td',value); }
+function initial() {
+  coordinator=new Coordinator({dimension:16,policy:el('policy').value});
+  const agents=[
+    {id:'researcher',name:'Agente de pesquisa',capabilities:['research','summarize'],embedding:basis(0),capacity:1},
+    {id:'analyst',name:'Agente analítico',capabilities:['analyze','summarize'],embedding:basis(1),capacity:1},
+    {id:'writer',name:'Agente de redação',capabilities:['write','summarize'],embedding:basis(2),capacity:1},
+    {id:'auditor',name:'Agente de auditoria',capabilities:['review','analyze'],embedding:basis(3),capacity:1}
+  ];
+  for(const a of agents) coordinator.registerAgent({...a,execute:executor(a.name)});
+  [
+    ['Levantar referências sobre coordenação distribuída','research',0,[]],
+    ['Analisar métricas de desempenho','analyze',1,['demo-1']],
+    ['Redigir um resumo técnico','write',2,['demo-2']],
+    ['Verificar consistência de resultados','review',3,['demo-3']],
+    ['Produzir síntese executiva','summarize',0,['demo-4']],
+    ['Analisar limitações e riscos','analyze',3,[]]
+  ].forEach(([title,cap,dim,dependsOn],i)=>coordinator.submitTask({id:`demo-${i+1}`,title,
+    requiredCapabilities:[cap],dependsOn,priority:i===3?2:0,payload:{demonstracao:true},
+    affinityVector:basis(dim),idempotent:true,maxRetries:1}));
+  paint();
+}
+function paint() {
+  const s=coordinator.snapshot();
+  el('k-agents').textContent=s.metrics.agents;
+  el('k-done').textContent=s.metrics.completed;
+  el('k-queued').textContent=s.metrics.queued;
+  el('k-icoer').textContent=s.metrics.globalICOER == null ? '—' : s.metrics.globalICOER.toFixed(4);
+  const ab=el('agents-body');ab.replaceChildren();
+  s.agents.forEach(a=>{
+    const tr=document.createElement('tr');addCell(tr,a.name);
+    const tags=document.createElement('td');a.capabilities.forEach(c=>addText(tags,'span',icons[c]||c,'tag'));tr.appendChild(tags);
+    addCell(tr,`${a.active}/${a.capacity}`);addCell(tr,`${a.completed} ✓ / ${a.failed} ×`);
+    addText(tr,'td',a.online?'Disponível':'Offline');ab.appendChild(tr);
+  });
+  const tb=el('tasks-body');tb.replaceChildren();
+  s.tasks.forEach(t=>{
+    const tr=document.createElement('tr');addCell(tr,t.title);
+    addCell(tr,t.requiredCapabilities.map(c=>icons[c]||c).join(', '));
+    addCell(tr,t.assignedTo||'Aguardando');
+    const td=document.createElement('td');addText(td,'span',t.status==='queued'&&!t.ready?'Aguardando dependência':t.status,'status '+t.status);tr.appendChild(td);
+    const score=document.createElement('td');score.textContent=t.route?.score==null?'—':t.route.score.toFixed(3);
+    tr.appendChild(score);
+    const co=document.createElement('td');co.textContent=t.route?.coherence==null?'—':t.route.coherence.toFixed(4);
+    tr.appendChild(co);tb.appendChild(tr);
+  });
+  const trace=el('trace');trace.replaceChildren();
+  s.events.slice(-35).reverse().forEach(e=>{
+    addText(trace,'div',`${String(e.seq).padStart(3,'0')} ${e.type} ${e.taskId||e.agentId||''} ${e.agentId&&e.taskId?'→ '+e.agentId:''} ${e.reason||''}`);
+  });
+  el('selection-note').textContent=`Política: ${s.policy} · concluídas ${s.metrics.completed}/${s.metrics.total} · `+
+    `latência observada nos executores simulados: ${s.metrics.meanLatencyMs==null?'—':s.metrics.meanLatencyMs+' ms'}.`;
+}
+el('run').addEventListener('click',async ()=>{
+  const b=el('run');b.disabled=true;
+  try {await coordinator.runUntilIdle();paint();}finally{b.disabled=false;}
+});
+el('reset').addEventListener('click',initial);
+el('policy').addEventListener('change',initial);
+el('add').addEventListener('click',()=>{
+  const cap=el('capability').value, title=el('tasktitle').value.trim();
+  if(!title){el('tasktitle').focus();return;}
+  const dim={research:0,analyze:1,write:2,review:3,summarize:0}[cap];
+  coordinator.submitTask({title,requiredCapabilities:[cap],affinityVector:basis(dim),
+    payload:{demoOnly:true},idempotent:true,maxRetries:1});
+  paint();
+});
+el('export').addEventListener('click',()=>{
+  const data=coordinator.exportAudit(),u=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+  const link=document.createElement('a');link.href=u;link.download='ayanode_v1.2_auditoria.json';link.click();
+  setTimeout(()=>URL.revokeObjectURL(u),1000);
+});
+initial();
+})();
+
+</script>
+</body>
+</html>

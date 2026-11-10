@@ -1,0 +1,20 @@
+# Dependências locais
+node_modules/
+# Persistência do relay GUN: nunca publicar conteúdo experimental de uma sala
+ayanode_gun_data*
+radadata/
+# Configuração local e segredos
+.env
+.env.*
+!.env.example
+# Logs e sistemas operacionais
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+coverage/
+# Mapeamento local de agentes: pode revelar arquitetura e modelos usados
+config/agents.json
+# Auditorias podem conter prompts e respostas sensíveis
+AYANODE-v1.3-execucao*.json
